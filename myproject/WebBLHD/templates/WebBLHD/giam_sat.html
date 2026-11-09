@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giám sát Video - Hệ thống Phát hiện Bạo lực Học đường</title>
+    <!-- Bootstrap 5 CSS kết hợp bộ nhận diện chuẩn -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #fcfbfa;
+            color: #1a1a1a;
+        }
+
+        /*  Navigation Bar*/
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 60px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #eae5de;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.01);
+        }
+
+        .navbar .logo {
+            font-weight: bold;
+            font-size: 22px;
+            color: #0b4f4c;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 35px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            position: relative;
+            padding-bottom: 5px;
+            transition: color 0.2s;
+        }
+
+        .nav-links a.active, .nav-links a:hover {
+            color: #0b4f4c;
+        }
+
+        .nav-links a.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: #0b4f4c;
+            border-radius: 2px;
+        }
+
+        /* Khu vực tài khoản người dùng */
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 16px;
+            border: 1px solid #e0dbd1;
+            border-radius: 30px;
+            background: #fff;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background-color: #0b4f4c;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* 2. Khung nội dung chính */
+        .content-wrapper {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .filter-card {
+            background: #ffffff;
+            border: 1px solid #eae5de;
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+        }
+
+        .camera-card {
+            background: #ffffff;
+            border: 1px solid #eae5de;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+            transition: border-color 0.2s;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .camera-card:hover {
+            border-color: #0b4f4c;
+        }
+
+        .btn-custom-primary {
+            background-color: #0b4f4c;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            border: none;
+            transition: background 0.2s;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-custom-primary:hover {
+            background-color: #083b39;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Thanh Navigation Bar -->
+    <nav class="navbar">
+        <a href="{% url 'index' %}" class="logo">
+            🛡️Hệ thống phát hiện bạo lực học đường
+        </a>
+        
+        <ul class="nav-links">
+            <li><a href="{% url 'index' %}">Trang chủ</a></li>
+            <li><a href="{% url 'giam_sat' %}" class="active">Giám sát Video</a></li>
+            <li><a href="{% url 'video_upload' %}">Tải lên & Phân tích</a></li>
+        </ul>
+
+        <div class="user-menu">
+            {% if user.is_authenticated %}
+                <div class="user-avatar">{{ user.username|slice:":1"|upper }}</div>
+                <span style="font-weight: 500; font-size: 14px;">{{ user.username }}</span>
+            {% else %}
+                <a href="{% url 'admin:login' %}" style="text-decoration: none; color: #0b4f4c; font-weight: 600;">Đăng nhập</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Main Content Wrapper -->
+    <div class="content-wrapper">
+        
+        <!-- Header Section -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <div>
+                <h1 style="font-size: 32px; color: #0b4f4c; margin-bottom: 8px; font-weight: bold;">Phòng Giám Sát Camera</h1>
+                <p style="color: #666; margin: 0;">Theo dõi trực quan khung hình, trạng thái AI và phát lại video ghi nhận từ các khu vực.</p>
+            </div>
+            <div>
+                <a href="{% url 'admin:WebBLHD_videoupload_add' %}" class="btn-custom-primary">
+                    + Tải lên video mới
+                </a>
+            </div>
+        </div>
+
+        <!-- SEARCH & FILTER CARD -->
+        <div class="filter-card">
+            <form method="GET" class="row g-3 align-items-center">
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-secondary"><i class="bi bi-search"></i></span>
+                        <input type="text" name="q" class="form-control border-secondary" placeholder="Mã ID hoặc tiêu đề..." value="{{ query }}">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <select name="camera" class="form-select border-secondary">
+                        <option value="">-- Khu vực --</option>
+                        <option value="san_truong" {% if selected_camera == 'san_truong' %}selected{% endif %}>Sân trường</option>
+                        <option value="san_bong" {% if selected_camera == 'san_bong' %}selected{% endif %}>Sân bóng</option>
+                        <option value="lop_a" {% if selected_camera == 'lop_a' %}selected{% endif %}>Lớp học A</option>
+                        <option value="lop_b" {% if selected_camera == 'lop_b' %}selected{% endif %}>Lớp học B</option>
+                        <option value="hanh_lang" {% if selected_camera == 'hanh_lang' %}selected{% endif %}>Hành lang</option>
+                        <option value="cang_tin" {% if selected_camera == 'cang_tin' %}selected{% endif %}>Căng tin</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="status" class="form-select border-secondary">
+                        <option value="">-- Trạng thái AI --</option>
+                        <option value="PENDING" {% if selected_status == 'PENDING' %}selected{% endif %}>Chờ xử lý</option>
+                        <option value="PROCESSING" {% if selected_status == 'PROCESSING' %}selected{% endif %}>Phân tích AI</option>
+                        <option value="SAFE" {% if selected_status == 'SAFE' %}selected{% endif %}>An toàn</option>
+                        <option value="WARNING" {% if selected_status == 'WARNING' %}selected{% endif %}>Cảnh báo</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <input type="date" name="date" class="form-control border-secondary" value="{{ selected_date }}">
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn-custom-primary w-100"><i class="bi bi-filter"></i> Lọc dữ liệu</button>
+                    <a href="{% url 'giam_sat' %}" class="btn btn-outline-secondary d-flex align-items-center justify-content-center px-3" title="Đặt lại bộ lọc"><i class="bi bi-arrow-counterclockwise"></i></a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Camera Video Grid Layout -->
+        <div class="row g-4">
+            {% for item in videos %}
+            <div class="col-xl-4 col-md-6">
+                <div class="camera-card">
+                    <div class="p-3 bg-white border-bottom d-flex justify-content-between align-items-center">
+                        <span class="fw-bold" style="color: #0b4f4c;"><i class="bi bi-camera"></i> {{ item.get_camera_location_display }}</span>
+                        {% if item.status == 'WARNING' %}
+                            <span class="badge bg-danger"><i class="bi bi-exclamation-triangle-fill"></i> CẢNH BÁO</span>
+                        {% elif item.status == 'SAFE' %}
+                            <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> An toàn</span>
+                        {% elif item.status == 'PROCESSING' %}
+                            <span class="badge bg-warning text-dark"><i class="bi bi-gear-fill"></i> Phân tích</span>
+                        {% else %}
+                            <span class="badge bg-secondary"><i class="bi bi-clock"></i> Chờ xử lý</span>
+                        {% endif %}
+                    </div>
+                    <div class="p-3 flex-grow-1 d-flex flex-column">
+                        <div class="ratio ratio-16x9 bg-black rounded overflow-hidden mb-3">
+                            {% if item.video_file %}
+                                <video controls class="w-100 h-100 object-fit-cover">
+                                    <source src="{{ item.video_file.url }}" type="video/mp4">
+                                    Trình duyệt không hỗ trợ phát video.
+                                </video>
+                            {% else %}
+                                <div class="d-flex flex-column align-items-center justify-content-center text-muted">
+                                    <i class="bi bi-camera-video-off fs-2 mb-1"></i>
+                                    <small>Không có file video</small>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <h6 class="fw-bold mb-1" style="color: #1a1a1a;">{{ item.title }}</h6>
+                        <div class="d-flex justify-content-between text-muted small mt-auto pt-2">
+                            <span>ID: <strong style="color: #1a1a1a;">{{ item.video_id }}</strong></span>
+                            <span>Ghi hình: {{ item.recording_time|date:"d/m/Y H:i" }}</span>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-white border-top text-end">
+                        <a href="{% url 'video_detail' item.id %}" class="btn btn-sm btn-outline-dark">
+                            <i class="bi bi-info-circle"></i> Chi tiết AI
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <div class="filter-card py-5">
+                    <div class="text-muted">
+                        <i class="bi bi-search fs-1 d-block mb-3 text-secondary"></i>
+                        <h5>Không tìm thấy video phù hợp</h5>
+                        <p class="small mb-3">Hãy thử thay đổi từ khóa tìm kiếm hoặc bộ lọc thời gian/khu vực.</p>
+                        <a href="{% url 'giam_sat' %}" class="btn-custom-primary">
+                            Xem tất cả camera
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
